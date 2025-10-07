@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Validation Sheet Builder</title>
+
+  <!-- ExcelJS and FileSaver -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Poppins';
+    }
+    body {
+      margin: 2em;
+    }
+    label {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    input {
+      margin: 4px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin: 4px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    .selected {
+      background-color: #24a0ed;
+      color: white;
+    }
+    .section {
+      margin-bottom: 2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="section">
+    <label>Partner Name:</label>
+    <input id="partnerName" type="text" placeholder="Enter partner name..." />
+  </div>
+
+  <div id="sections"></div>
+
+  <button id="exportBtn" style="background-color: #24a0ed; color: white;">Create Validation Sheet</button>
+
+  <script>
+    // --- Data options ---
+    const hostedOptions = [
+      'Token (Keyed)', 'Vault (Keyed)', 'Cryptogram (Keyed)',
+      'Token (Swipe)', 'Vault (Swipe)', 'Cryptogram (Swipe)'
+    ];
+
+    const embeddedOptions = ['Embedded Sale', 'Embedded Token'];
+    const walletOptions = ['Apple Pay', 'Google Pay', 'Paypal', 'Paze', 'Chariot'];
+    const apiOptions = [
+      'Create Payment', 'Authorize Payment', 'Refund Payment', 'Cancel Payment', 'Complete Payment',
+      'Search Payment', 'Create Subscription', 'Modify Subscription', 'Create Payment Method',
+      'Modify Payment Method', 'Generate Token', 'Create Customer', 'Get Customer',
+      'Modify Customer', 'Close Batch', 'Retrieve Report', 'Create Payment Link'
+    ];
+    const feeOptions = ['Partner Fee', 'Surcharge'];
+    const webhookOptions = [
+      'Merchant Loaded', 'Merchant Updated', 'Payment Processed',
+      'CC Batch Processed', 'ACH/EFT Batch Processed', 'ACH/EFT Rejected',
+      'CC Chargeback', 'Vault'
+    ];
+
+    let hosted = [], embedded = [], wallets = [], endpoints = [];
+
+    function toggleSelection(arr, value) {
+      const idx = arr.indexOf(value);
+      if (idx === -1) arr.push(value);
+      else arr.splice(idx, 1);
+    }
+
+    const sectionsData = [
+      { title: 'Hosted Payment Form Options', options: hostedOptions, arr: hosted },
+      { title: 'Embedded Payment Options', options: embeddedOptions, arr: embedded },
+      { title: 'Digital Wallet Options', options: walletOptions, arr: wallets },
+      { title: 'API Endpoints', options: apiOptions, arr: endpoints }
+    ];
+
+    const container = document.getElementById('sections');
+
+    sectionsData.forEach(section => {
+      const div = document.createElement('div');
+      div.classList.add('section');
+
+      const title = document.createElement('h3');
+      title.textContent = section.title;
+      div.appendChild(title);
+
+      section.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          toggleSelection(section.arr, opt);
+          btn.classList.toggle('selected');
+        });
+        div.appendChild(btn);
+      });
+
+      container.appendChild(div);
+    });
+
+    // --- ExcelJS Export (with styles) ---
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const partnerName = document.getElementById('partnerName').value.trim();
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Validation Sheet');
+
+      ws.columns = [
+        { width: 30 },
+        { width: 30 },
+        { width: 30 }
+      ];
+
+      const headerStyle = {
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF24A0ED' } },
+        alignment: { horizontal: 'center' }
+      };
+
+      const addSection = (header, arr, cols = 2) => {
+        if (ws.lastRow) ws.addRow([]);
+        const headerRow = ws.addRow(header);
+        for (let i = 1; i <= header.length; i++) {
+          const cell = headerRow.getCell(i);
+          cell.font = headerStyle.font;
+          cell.fill = headerStyle.fill;
+          cell.alignment = headerStyle.alignment;
+        }
+        arr.forEach(v => ws.addRow([v, ...(Array(cols - 1).fill(''))]));
+      };
+
+      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
+      if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
+      if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
+      if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
+
+      ws.addRow([]);
+      addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
+      ws.addRow([]);
+      addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const fileName = partnerName
+        ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
+        : 'Validation-Sheet.xlsx';
+      saveAs(blob, fileName);
+    });
+  </script>
+</body>
+</html>
