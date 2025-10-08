@@ -145,9 +145,7 @@
       if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
       if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
 
-      ws.addRow([]);
       addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
-      ws.addRow([]);
       addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
 
       const buf = await wb.xlsx.writeBuffer();
