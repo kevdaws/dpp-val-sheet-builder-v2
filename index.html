@@ -140,7 +140,7 @@
         arr.forEach(v => ws.addRow([v, ...(Array(cols - 1).fill(''))]));
       };
 
-      if (hosted.length) addSection(['Hosted Payment Form', 'xOptions', 'Response Data'], hosted);
+      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
       if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
       if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
       if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
