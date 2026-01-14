@@ -66,6 +66,11 @@
       'Modify Payment Method', 'Generate Token', 'Create Customer', 'Get Customer',
       'Modify Customer', 'Close Batch', 'Retrieve Report', 'Create Payment Link'
     ];
+    const invoiceOptions = [
+      "Create Invoice", "Get Invoice", "Modify Invoice Status", "Modify Invoice Details",
+      "Modify Invoice Status", "Search Invoice", "Share Invoice", "Clone Invoice", "Download Invoice", 
+      "Create Invoice Config", "Get Invoice Config", "Modify Invoice Config"
+    ]
     const feeOptions = ['Partner Fee', 'Surcharge'];
     const webhookOptions = [
       'Merchant Loaded', 'Merchant Updated', 'Payment Processed',
@@ -85,7 +90,8 @@
       { title: 'Hosted Payment Form Options', options: hostedOptions, arr: hosted },
       { title: 'Embedded Payment Options', options: embeddedOptions, arr: embedded },
       { title: 'Digital Wallet Options', options: walletOptions, arr: wallets },
-      { title: 'API Endpoints', options: apiOptions, arr: endpoints }
+      { title: 'API Endpoints', options: apiOptions, arr: endpoints },
+      { title: 'Invoice Endpoints', options: invoiceOptions, arr: endpoints }
     ];
 
     const container = document.getElementById('sections');
