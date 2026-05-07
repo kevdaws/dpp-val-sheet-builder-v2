@@ -44,24 +44,22 @@
     }
 
     .section {
-      margin-bottom: 2em;
+      margin-bottom: 1.5em;
     }
 
     details {
       margin-bottom: 12px;
-      padding-left: 0;
     }
 
     summary {
       cursor: pointer;
       font-weight: bold;
-      margin-bottom: 8px;
-      margin-left: 0;
+      font-size: 18px;
+      margin-bottom: 10px;
     }
 
     .button-group {
-      margin-left: 0;
-      padding-left: 0;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -104,7 +102,7 @@
       'Google Pay',
       'Paypal',
       'Paze',
-      'DAF Pay'
+      'Chariot'
     ];
 
     const apiGroups = {
@@ -227,16 +225,16 @@
 
     const container = document.getElementById('sections');
 
-    // STANDARD SECTIONS
+    // MAIN DROPDOWN SECTIONS
     sectionsData.forEach(section => {
 
-      const div = document.createElement('div');
-      div.classList.add('section');
+      const details = document.createElement('details');
+      details.classList.add('section');
 
-      const title = document.createElement('h3');
-      title.textContent = section.title;
+      const summary = document.createElement('summary');
+      summary.textContent = section.title;
 
-      div.appendChild(title);
+      details.appendChild(summary);
 
       const buttonGroup = document.createElement('div');
       buttonGroup.classList.add('button-group');
@@ -254,19 +252,19 @@
         buttonGroup.appendChild(btn);
       });
 
-      div.appendChild(buttonGroup);
+      details.appendChild(buttonGroup);
 
-      container.appendChild(div);
+      container.appendChild(details);
     });
 
     // API ENDPOINT DROPDOWNS
-    const apiDiv = document.createElement('div');
-    apiDiv.classList.add('section');
+    const apiDetails = document.createElement('details');
+    apiDetails.classList.add('section');
 
-    const apiTitle = document.createElement('h3');
-    apiTitle.textContent = 'API Endpoints';
+    const apiSummary = document.createElement('summary');
+    apiSummary.textContent = 'API Endpoints';
 
-    apiDiv.appendChild(apiTitle);
+    apiDetails.appendChild(apiSummary);
 
     Object.entries(apiGroups).forEach(([groupName, groupOptions]) => {
 
@@ -295,10 +293,10 @@
 
       details.appendChild(buttonGroup);
 
-      apiDiv.appendChild(details);
+      apiDetails.appendChild(details);
     });
 
-    container.appendChild(apiDiv);
+    container.appendChild(apiDetails);
 
     // VALIDATION SHEET EXPORT
     document.getElementById('exportBtn').addEventListener('click', async () => {
