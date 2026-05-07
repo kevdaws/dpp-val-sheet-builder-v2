@@ -16,30 +16,21 @@
     body {
       margin: 2em;
       display: flex;
-      gap: 2em;
+      gap: 1.2em;
       align-items: flex-start;
     }
 
     .main {
-      flex: 1;
-      min-width: 0;
+      flex: 0 0 68%;
     }
 
     .panel {
       width: 260px;
       border-left: 1px solid #ddd;
-      padding-left: 16px;
+      padding-left: 14px;
       position: sticky;
       top: 20px;
       height: fit-content;
-    }
-
-    .panel h3 {
-      margin-top: 0;
-    }
-
-    .section {
-      margin-bottom: 1.5em;
     }
 
     label {
@@ -86,6 +77,17 @@
     ul {
       padding-left: 18px;
       font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .panel-section {
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      display: block;
     }
   </style>
 </head>
@@ -111,21 +113,29 @@
 
   </div>
 
-  <!-- RIGHT SIDE SELECTION PANEL -->
+  <!-- RIGHT PANEL -->
   <div class="panel">
     <h3>Current Selections</h3>
 
-    <strong>Hosted</strong>
-    <ul id="sel-hosted"></ul>
+    <div id="hostedWrap" class="panel-section">
+      <span class="panel-title" id="hostedTitle">Hosted</span>
+      <ul id="sel-hosted"></ul>
+    </div>
 
-    <strong>Embedded</strong>
-    <ul id="sel-embedded"></ul>
+    <div id="embeddedWrap" class="panel-section">
+      <span class="panel-title" id="embeddedTitle">Embedded</span>
+      <ul id="sel-embedded"></ul>
+    </div>
 
-    <strong>Wallets</strong>
-    <ul id="sel-wallets"></ul>
+    <div id="walletWrap" class="panel-section">
+      <span class="panel-title" id="walletTitle">Wallets</span>
+      <ul id="sel-wallets"></ul>
+    </div>
 
-    <strong>API</strong>
-    <ul id="sel-api"></ul>
+    <div id="apiWrap" class="panel-section">
+      <span class="panel-title" id="apiTitle">API</span>
+      <ul id="sel-api"></ul>
+    </div>
   </div>
 
   <script>
@@ -212,25 +222,6 @@
       ]
     };
 
-    const onboardingOptions = [
-      'Create Merchant',
-      'Get Merchant',
-      'Modify Merchant',
-      'Board Merchant'
-    ];
-
-    const feeOptions = ['Partner Fee', 'Surcharge'];
-    const webhookOptions = [
-      'Merchant Loaded',
-      'Merchant Updated',
-      'Payment Processed',
-      'CC Batch Processed',
-      'ACH/EFT Batch Processed',
-      'ACH/EFT Rejected',
-      'CC Chargeback',
-      'Vault'
-    ];
-
     let hosted = [];
     let embedded = [];
     let wallets = [];
@@ -243,7 +234,13 @@
       renderSelections();
     }
 
+    function setVisibility(titleId, list) {
+      const el = document.getElementById(titleId);
+      el.style.display = list.length ? 'block' : 'none';
+    }
+
     function renderSelections() {
+
       document.getElementById('sel-hosted').innerHTML =
         hosted.map(v => `<li>${v}</li>`).join('');
 
@@ -255,6 +252,12 @@
 
       document.getElementById('sel-api').innerHTML =
         endpoints.map(v => `<li>${v}</li>`).join('');
+
+      // hide headers when empty
+      setVisibility('hostedTitle', hosted);
+      setVisibility('embeddedTitle', embedded);
+      setVisibility('walletTitle', wallets);
+      setVisibility('apiTitle', endpoints);
     }
 
     const container = document.getElementById('sections');
@@ -262,7 +265,6 @@
     function buildSection(title, options, arr) {
 
       const details = document.createElement('details');
-      details.classList.add('section');
 
       const summary = document.createElement('summary');
       summary.textContent = title;
@@ -294,7 +296,6 @@
     buildSection('Digital Wallet Options', walletOptions, wallets);
 
     const apiDetails = document.createElement('details');
-    apiDetails.classList.add('section');
     apiDetails.open = true;
 
     const apiSummary = document.createElement('summary');
