@@ -12,19 +12,23 @@
     * {
       font-family: 'Poppins';
     }
+
     body {
       margin: 2em;
     }
+
     label {
       font-size: 20px;
       font-weight: bold;
     }
+
     input {
       margin: 4px;
       padding: 8px 12px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
     button {
       margin: 4px;
       padding: 8px 12px;
@@ -32,16 +36,30 @@
       border: 1px solid #ccc;
       cursor: pointer;
     }
+
     .selected {
       background-color: #E60000;
       color: white;
     }
+
     .section {
       margin-bottom: 2em;
     }
+
+    details {
+      margin-bottom: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
+
 <body>
+
   <div class="section">
     <label>Partner Name:</label>
     <input id="partnerName" type="text" placeholder="Enter partner name..." />
@@ -53,7 +71,6 @@
     Create Validation Sheet
   </button>
 
-  <!-- NEW BUTTON -->
   <button id="onboardingBtn" style="background-color: #222; color: white;">
     Create Onboarding Sheet
   </button>
@@ -61,79 +78,165 @@
   <script>
 
     const hostedOptions = [
-      'Token (Keyed)', 'Vault (Keyed)', 'Cryptogram (Keyed)',
-      'Token (Swipe)', 'Vault (Swipe)', 'Cryptogram (Swipe)'
+      'Token (Keyed)',
+      'Vault (Keyed)',
+      'Cryptogram (Keyed)',
+      'Token (Swipe)',
+      'Vault (Swipe)',
+      'Cryptogram (Swipe)'
     ];
 
-    const embeddedOptions = ['Embedded Sale', 'Embedded Token'];
-
-    const walletOptions = ['Apple Pay', 'Google Pay', 'Paypal', 'Paze', 'Chariot'];
-
-    const apiOptions = [
-      'Create Payment', 'Create EMV Payment', 'Authorize Payment',
-      'Refund Payment', 'Create EMV Refund', 'Cancel Payment', 'Complete Payment',
-      'Search Payment', 'Create Subscription', 'Modify Subscription',
-      'Create Payment Method', 'Modify Payment Method', 'Generate Token',
-      'AVS Check', 'Check Surcharge', 'EMV Device Status', 'Create Customer',
-      'Get Customer', 'Modify Customer', 'Close Batch',
-      'Retrieve Report', 'Create Payment Link'
+    const embeddedOptions = [
+      'Embedded Sale',
+      'Embedded Token'
     ];
+
+    const walletOptions = [
+      'Apple Pay',
+      'Google Pay',
+      'Paypal',
+      'Paze',
+      'Chariot'
+    ];
+
+    // NEW GROUPED API OPTIONS
+    const apiGroups = {
+
+      Payments: [
+        'Create Payment',
+        'Create EMV Payment',
+        'Authorize Payment',
+        'Refund Payment',
+        'Create EMV Refund',
+        'Cancel Payment',
+        'Complete Payment',
+        'Search Payment',
+        'Create Payment Link'
+      ],
+
+      Subscriptions: [
+        'Create Subscription',
+        'Modify Subscription'
+      ],
+
+      PaymentMethods: [
+        'Create Payment Method',
+        'Modify Payment Method',
+        'Generate Token'
+      ],
+
+      Customers: [
+        'Create Customer',
+        'Get Customer',
+        'Modify Customer'
+      ],
+
+      BatchAndReports: [
+        'Close Batch',
+        'Retrieve Report'
+      ],
+
+      Utilities: [
+        'AVS Check',
+        'Check Surcharge',
+        'EMV Device Status'
+      ]
+    };
 
     const invoiceOptions = [
-      "Create Invoice", "Get Invoice", "Modify Invoice Status",
-      "Modify Invoice Details", "Modify Invoice Status",
-      "Search Invoice", "Share Invoice", "Clone Invoice",
-      "Download Invoice", "Create Invoice Config",
-      "Get Invoice Config", "Modify Invoice Config"
-    ];
-
-    const feeOptions = ['Partner Fee', 'Surcharge'];
-
-    const webhookOptions = [
-      'Merchant Loaded', 'Merchant Updated', 'Payment Processed',
-      'CC Batch Processed', 'ACH/EFT Batch Processed',
-      'ACH/EFT Rejected', 'CC Chargeback', 'Vault'
+      "Create Invoice",
+      "Get Invoice",
+      "Modify Invoice Status",
+      "Modify Invoice Details",
+      "Modify Invoice Status",
+      "Search Invoice",
+      "Share Invoice",
+      "Clone Invoice",
+      "Download Invoice",
+      "Create Invoice Config",
+      "Get Invoice Config",
+      "Modify Invoice Config"
     ];
 
     const onboardingOptions = [
-      'Create Application',
-      'Get Existing Application',
-      'Download Application PDF',
-      'Get Acceptance Rates & Fees',
-      'Get Acceptance Language',
-      'Initiate Identity Verification',
-      'Submit Identity Verification',
-      'Submit Merchant Decision',
-      'Get Application Status'
+      'Create Merchant',
+      'Get Merchant',
+      'Modify Merchant',
+      'Board Merchant'
     ];
 
-    let hosted = [], embedded = [], wallets = [], endpoints = [];
+    const feeOptions = [
+      'Partner Fee',
+      'Surcharge'
+    ];
+
+    const webhookOptions = [
+      'Merchant Loaded',
+      'Merchant Updated',
+      'Payment Processed',
+      'CC Batch Processed',
+      'ACH/EFT Batch Processed',
+      'ACH/EFT Rejected',
+      'CC Chargeback',
+      'Vault'
+    ];
+
+    let hosted = [];
+    let embedded = [];
+    let wallets = [];
+    let endpoints = [];
 
     function toggleSelection(arr, value) {
       const idx = arr.indexOf(value);
-      if (idx === -1) arr.push(value);
-      else arr.splice(idx, 1);
+
+      if (idx === -1) {
+        arr.push(value);
+      } else {
+        arr.splice(idx, 1);
+      }
     }
 
     const sectionsData = [
-      { title: 'Hosted Payment Form Options', options: hostedOptions, arr: hosted },
-      { title: 'Embedded Payment Options', options: embeddedOptions, arr: embedded },
-      { title: 'Digital Wallet Options', options: walletOptions, arr: wallets },
-      { title: 'API Endpoints', options: apiOptions, arr: endpoints },
-      { title: 'Invoice Endpoints', options: invoiceOptions, arr: endpoints }
+      {
+        title: 'Hosted Payment Form Options',
+        options: hostedOptions,
+        arr: hosted
+      },
+
+      {
+        title: 'Embedded Payment Options',
+        options: embeddedOptions,
+        arr: embedded
+      },
+
+      {
+        title: 'Digital Wallet Options',
+        options: walletOptions,
+        arr: wallets
+      },
+
+      {
+        title: 'Invoice Endpoints',
+        options: invoiceOptions,
+        arr: endpoints
+      }
     ];
 
     const container = document.getElementById('sections');
 
+    // STANDARD SECTIONS
     sectionsData.forEach(section => {
+
       const div = document.createElement('div');
       div.classList.add('section');
 
       const title = document.createElement('h3');
       title.textContent = section.title;
+
       div.appendChild(title);
 
       section.options.forEach(opt => {
+
         const btn = document.createElement('button');
         btn.textContent = opt;
 
@@ -148,8 +251,49 @@
       container.appendChild(div);
     });
 
+    // NEW GROUPED API SECTION
+    const apiDiv = document.createElement('div');
+    apiDiv.classList.add('section');
+
+    const apiTitle = document.createElement('h3');
+    apiTitle.textContent = 'API Endpoints';
+
+    apiDiv.appendChild(apiTitle);
+
+    Object.entries(apiGroups).forEach(([groupName, groupOptions]) => {
+
+      const details = document.createElement('details');
+
+      const summary = document.createElement('summary');
+      summary.textContent = groupName;
+
+      details.appendChild(summary);
+
+      groupOptions.forEach(opt => {
+
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+
+        btn.addEventListener('click', () => {
+          toggleSelection(endpoints, opt);
+          btn.classList.toggle('selected');
+        });
+
+        details.appendChild(btn);
+      });
+
+      apiDiv.appendChild(details);
+    });
+
+    container.appendChild(apiDiv);
+
+    // VALIDATION SHEET EXPORT
     document.getElementById('exportBtn').addEventListener('click', async () => {
-      const partnerName = document.getElementById('partnerName').value.trim();
+
+      const partnerName = document
+        .getElementById('partnerName')
+        .value
+        .trim();
 
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Validation Sheet');
@@ -161,39 +305,95 @@
       ];
 
       const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
+        font: {
+          bold: true,
+          color: { argb: 'FFFFFFFF' }
+        },
+
+        fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E60000' }
+        },
+
+        alignment: {
+          horizontal: 'center'
+        }
       };
 
       const addSection = (header, arr, cols = 2) => {
-        if (ws.lastRow) ws.addRow([]);
+
+        if (ws.lastRow) {
+          ws.addRow([]);
+        }
 
         const headerRow = ws.addRow(header);
 
         for (let i = 1; i <= header.length; i++) {
+
           const cell = headerRow.getCell(i);
+
           cell.font = headerStyle.font;
           cell.fill = headerStyle.fill;
           cell.alignment = headerStyle.alignment;
         }
 
-        arr.forEach(v => ws.addRow([v, ...(Array(cols - 1).fill(''))]));
+        arr.forEach(v => {
+          ws.addRow([
+            v,
+            ...(Array(cols - 1).fill(''))
+          ]);
+        });
       };
 
-      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
-      if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
-      if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
-      if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
+      if (hosted.length) {
+        addSection(
+          ['Hosted Payment Form', 'Response Data'],
+          hosted
+        );
+      }
 
-      addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
-      addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
+      if (embedded.length) {
+        addSection(
+          ['Embedded Payments', 'JWT', 'Response Data'],
+          embedded,
+          3
+        );
+      }
+
+      if (wallets.length) {
+        addSection(
+          ['Digital Wallets', 'Response Data'],
+          wallets
+        );
+      }
+
+      if (endpoints.length) {
+        addSection(
+          ['API Endpoints', 'Request Data', 'Response Data'],
+          endpoints,
+          3
+        );
+      }
+
+      addSection(
+        ['Fee Type', 'Using? (Y/N)'],
+        feeOptions
+      );
+
+      addSection(
+        ['Webhook', 'Subscribed? (Y/N)'],
+        webhookOptions
+      );
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const blob = new Blob(
+        [buf],
+        {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      );
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
@@ -202,9 +402,13 @@
       saveAs(blob, fileName);
     });
 
-    // NEW
+    // ONBOARDING SHEET EXPORT
     document.getElementById('onboardingBtn').addEventListener('click', async () => {
-      const partnerName = document.getElementById('partnerName').value.trim();
+
+      const partnerName = document
+        .getElementById('partnerName')
+        .value
+        .trim();
 
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Onboarding Sheet');
@@ -216,9 +420,20 @@
       ];
 
       const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
+        font: {
+          bold: true,
+          color: { argb: 'FFFFFFFF' }
+        },
+
+        fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E60000' }
+        },
+
+        alignment: {
+          horizontal: 'center'
+        }
       };
 
       const headerRow = ws.addRow([
@@ -228,7 +443,9 @@
       ]);
 
       for (let i = 1; i <= 3; i++) {
+
         const cell = headerRow.getCell(i);
+
         cell.font = headerStyle.font;
         cell.fill = headerStyle.fill;
         cell.alignment = headerStyle.alignment;
@@ -240,9 +457,12 @@
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const blob = new Blob(
+        [buf],
+        {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      );
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Onboarding-Sheet.xlsx`
@@ -252,5 +472,6 @@
     });
 
   </script>
+
 </body>
 </html>
