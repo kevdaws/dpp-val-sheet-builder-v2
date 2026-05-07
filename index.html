@@ -49,7 +49,14 @@
 
   <div id="sections"></div>
 
-  <button id="exportBtn" style="background-color: #E60000; color: white;">Create Validation Sheet</button>
+  <button id="exportBtn" style="background-color: #E60000; color: white;">
+    Create Validation Sheet
+  </button>
+
+  <!-- NEW BUTTON -->
+  <button id="onboardingBtn" style="background-color: #222; color: white;">
+    Create Onboarding Sheet
+  </button>
 
   <script>
 
@@ -59,23 +66,45 @@
     ];
 
     const embeddedOptions = ['Embedded Sale', 'Embedded Token'];
+
     const walletOptions = ['Apple Pay', 'Google Pay', 'Paypal', 'Paze', 'Chariot'];
+
     const apiOptions = [
-      'Create Payment', 'Create EMV Payment', 'Authorize Payment', 'Refund Payment', 'Create EMV Refund', 'Cancel Payment', 'Complete Payment',
-      'Search Payment', 'Create Subscription', 'Modify Subscription', 'Create Payment Method',
-      'Modify Payment Method', 'Generate Token', 'AVS Check', 'Check Surcharge', 'EMV Device Status', 'Create Customer', 'Get Customer',
-      'Modify Customer', 'Close Batch', 'Retrieve Report', 'Create Payment Link'
+      'Create Payment', 'Create EMV Payment', 'Authorize Payment',
+      'Refund Payment', 'Create EMV Refund', 'Cancel Payment', 'Complete Payment',
+      'Search Payment', 'Create Subscription', 'Modify Subscription',
+      'Create Payment Method', 'Modify Payment Method', 'Generate Token',
+      'AVS Check', 'Check Surcharge', 'EMV Device Status', 'Create Customer',
+      'Get Customer', 'Modify Customer', 'Close Batch',
+      'Retrieve Report', 'Create Payment Link'
     ];
+
     const invoiceOptions = [
-      "Create Invoice", "Get Invoice", "Modify Invoice Status", "Modify Invoice Details",
-      "Modify Invoice Status", "Search Invoice", "Share Invoice", "Clone Invoice", "Download Invoice", 
-      "Create Invoice Config", "Get Invoice Config", "Modify Invoice Config"
-    ]
+      "Create Invoice", "Get Invoice", "Modify Invoice Status",
+      "Modify Invoice Details", "Modify Invoice Status",
+      "Search Invoice", "Share Invoice", "Clone Invoice",
+      "Download Invoice", "Create Invoice Config",
+      "Get Invoice Config", "Modify Invoice Config"
+    ];
+
     const feeOptions = ['Partner Fee', 'Surcharge'];
+
     const webhookOptions = [
       'Merchant Loaded', 'Merchant Updated', 'Payment Processed',
-      'CC Batch Processed', 'ACH/EFT Batch Processed', 'ACH/EFT Rejected',
-      'CC Chargeback', 'Vault'
+      'CC Batch Processed', 'ACH/EFT Batch Processed',
+      'ACH/EFT Rejected', 'CC Chargeback', 'Vault'
+    ];
+
+    const onboardingOptions = [
+      'Create Application',
+      'Get Existing Application',
+      'Download Application PDF',
+      'Get Acceptance Rates & Fees',
+      'Get Acceptance Language',
+      'Initiate Identity Verification',
+      'Submit Identity Verification',
+      'Submit Merchant Decision',
+      'Get Application Status'
     ];
 
     let hosted = [], embedded = [], wallets = [], endpoints = [];
@@ -107,10 +136,12 @@
       section.options.forEach(opt => {
         const btn = document.createElement('button');
         btn.textContent = opt;
+
         btn.addEventListener('click', () => {
           toggleSelection(section.arr, opt);
           btn.classList.toggle('selected');
         });
+
         div.appendChild(btn);
       });
 
@@ -119,6 +150,7 @@
 
     document.getElementById('exportBtn').addEventListener('click', async () => {
       const partnerName = document.getElementById('partnerName').value.trim();
+
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Validation Sheet');
 
@@ -136,13 +168,16 @@
 
       const addSection = (header, arr, cols = 2) => {
         if (ws.lastRow) ws.addRow([]);
+
         const headerRow = ws.addRow(header);
+
         for (let i = 1; i <= header.length; i++) {
           const cell = headerRow.getCell(i);
           cell.font = headerStyle.font;
           cell.fill = headerStyle.fill;
           cell.alignment = headerStyle.alignment;
         }
+
         arr.forEach(v => ws.addRow([v, ...(Array(cols - 1).fill(''))]));
       };
 
@@ -155,12 +190,67 @@
       addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
 
       const buf = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      const blob = new Blob([buf], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
         : 'Validation-Sheet.xlsx';
+
       saveAs(blob, fileName);
     });
+
+    // NEW
+    document.getElementById('onboardingBtn').addEventListener('click', async () => {
+      const partnerName = document.getElementById('partnerName').value.trim();
+
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Onboarding Sheet');
+
+      ws.columns = [
+        { width: 30 },
+        { width: 30 },
+        { width: 30 }
+      ];
+
+      const headerStyle = {
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
+        alignment: { horizontal: 'center' }
+      };
+
+      const headerRow = ws.addRow([
+        'Onboarding Endpoint',
+        'Request Data',
+        'Response Data'
+      ]);
+
+      for (let i = 1; i <= 3; i++) {
+        const cell = headerRow.getCell(i);
+        cell.font = headerStyle.font;
+        cell.fill = headerStyle.fill;
+        cell.alignment = headerStyle.alignment;
+      }
+
+      onboardingOptions.forEach(v => {
+        ws.addRow([v, '', '']);
+      });
+
+      const buf = await wb.xlsx.writeBuffer();
+
+      const blob = new Blob([buf], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      const fileName = partnerName
+        ? `${partnerName.replaceAll(' ', '-')}-Onboarding-Sheet.xlsx`
+        : 'Onboarding-Sheet.xlsx';
+
+      saveAs(blob, fileName);
+    });
+
   </script>
 </body>
 </html>
