@@ -99,19 +99,22 @@
       'Chariot'
     ];
 
-    // NEW GROUPED API OPTIONS
     const apiGroups = {
 
       Payments: [
         'Create Payment',
-        'Create EMV Payment',
         'Authorize Payment',
         'Refund Payment',
-        'Create EMV Refund',
         'Cancel Payment',
         'Complete Payment',
         'Search Payment',
         'Create Payment Link'
+      ],
+
+      EMV: [
+        'Create EMV Payment',
+        'Create EMV Refund',
+        'EMV Device Status'
       ],
 
       Subscriptions: [
@@ -122,7 +125,9 @@
       PaymentMethods: [
         'Create Payment Method',
         'Modify Payment Method',
-        'Generate Token'
+        'Generate Token',
+        'AVS Check',
+        'Check Surcharge'
       ],
 
       Customers: [
@@ -131,32 +136,28 @@
         'Modify Customer'
       ],
 
-      BatchAndReports: [
-        'Close Batch',
+      Batches: [
+        'Close Batch'
+      ],
+
+      Reports: [
         'Retrieve Report'
       ],
 
-      Utilities: [
-        'AVS Check',
-        'Check Surcharge',
-        'EMV Device Status'
+      Invoices: [
+        'Create Invoice',
+        'Get Invoice',
+        'Modify Invoice Status',
+        'Modify Invoice Details',
+        'Search Invoice',
+        'Share Invoice',
+        'Clone Invoice',
+        'Download Invoice',
+        'Create Invoice Config',
+        'Get Invoice Config',
+        'Modify Invoice Config'
       ]
     };
-
-    const invoiceOptions = [
-      "Create Invoice",
-      "Get Invoice",
-      "Modify Invoice Status",
-      "Modify Invoice Details",
-      "Modify Invoice Status",
-      "Search Invoice",
-      "Share Invoice",
-      "Clone Invoice",
-      "Download Invoice",
-      "Create Invoice Config",
-      "Get Invoice Config",
-      "Modify Invoice Config"
-    ];
 
     const onboardingOptions = [
       'Create Merchant',
@@ -213,18 +214,11 @@
         title: 'Digital Wallet Options',
         options: walletOptions,
         arr: wallets
-      },
-
-      {
-        title: 'Invoice Endpoints',
-        options: invoiceOptions,
-        arr: endpoints
       }
     ];
 
     const container = document.getElementById('sections');
 
-    // STANDARD SECTIONS
     sectionsData.forEach(section => {
 
       const div = document.createElement('div');
@@ -251,7 +245,6 @@
       container.appendChild(div);
     });
 
-    // NEW GROUPED API SECTION
     const apiDiv = document.createElement('div');
     apiDiv.classList.add('section');
 
@@ -287,7 +280,6 @@
 
     container.appendChild(apiDiv);
 
-    // VALIDATION SHEET EXPORT
     document.getElementById('exportBtn').addEventListener('click', async () => {
 
       const partnerName = document
