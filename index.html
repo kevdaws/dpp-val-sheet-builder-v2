@@ -195,12 +195,8 @@
 
     function toggleSelection(arr, value) {
       const idx = arr.indexOf(value);
-
-      if (idx === -1) {
-        arr.push(value);
-      } else {
-        arr.splice(idx, 1);
-      }
+      if (idx === -1) arr.push(value);
+      else arr.splice(idx, 1);
     }
 
     const sectionsData = [
@@ -209,13 +205,11 @@
         options: hostedOptions,
         arr: hosted
       },
-
       {
         title: 'Embedded Payment Options',
         options: embeddedOptions,
         arr: embedded
       },
-
       {
         title: 'Digital Wallet Options',
         options: walletOptions,
@@ -225,7 +219,7 @@
 
     const container = document.getElementById('sections');
 
-    // MAIN DROPDOWN SECTIONS
+    // MAIN SECTIONS AS DROPDOWNS
     sectionsData.forEach(section => {
 
       const details = document.createElement('details');
@@ -253,11 +247,10 @@
       });
 
       details.appendChild(buttonGroup);
-
       container.appendChild(details);
     });
 
-    // API ENDPOINT DROPDOWNS
+    // API ENDPOINTS (INDENTED DROPDOWNS)
     const apiDetails = document.createElement('details');
     apiDetails.classList.add('section');
 
@@ -265,6 +258,9 @@
     apiSummary.textContent = 'API Endpoints';
 
     apiDetails.appendChild(apiSummary);
+
+    const apiContainer = document.createElement('div');
+    apiContainer.style.paddingLeft = '20px';
 
     Object.entries(apiGroups).forEach(([groupName, groupOptions]) => {
 
@@ -292,19 +288,16 @@
       });
 
       details.appendChild(buttonGroup);
-
-      apiDetails.appendChild(details);
+      apiContainer.appendChild(details);
     });
 
+    apiDetails.appendChild(apiContainer);
     container.appendChild(apiDetails);
 
-    // VALIDATION SHEET EXPORT
+    // EXPORT VALIDATION SHEET
     document.getElementById('exportBtn').addEventListener('click', async () => {
 
-      const partnerName = document
-        .getElementById('partnerName')
-        .value
-        .trim();
+      const partnerName = document.getElementById('partnerName').value.trim();
 
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Validation Sheet');
@@ -316,95 +309,42 @@
       ];
 
       const headerStyle = {
-        font: {
-          bold: true,
-          color: { argb: 'FFFFFFFF' }
-        },
-
-        fill: {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'E60000' }
-        },
-
-        alignment: {
-          horizontal: 'center'
-        }
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
+        alignment: { horizontal: 'center' }
       };
 
       const addSection = (header, arr, cols = 2) => {
 
-        if (ws.lastRow) {
-          ws.addRow([]);
-        }
+        if (ws.lastRow) ws.addRow([]);
 
         const headerRow = ws.addRow(header);
 
         for (let i = 1; i <= header.length; i++) {
-
           const cell = headerRow.getCell(i);
-
           cell.font = headerStyle.font;
           cell.fill = headerStyle.fill;
           cell.alignment = headerStyle.alignment;
         }
 
         arr.forEach(v => {
-          ws.addRow([
-            v,
-            ...(Array(cols - 1).fill(''))
-          ]);
+          ws.addRow([v, ...(Array(cols - 1).fill(''))]);
         });
       };
 
-      if (hosted.length) {
-        addSection(
-          ['Hosted Payment Form', 'Response Data'],
-          hosted
-        );
-      }
+      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
+      if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
+      if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
+      if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
 
-      if (embedded.length) {
-        addSection(
-          ['Embedded Payments', 'JWT', 'Response Data'],
-          embedded,
-          3
-        );
-      }
-
-      if (wallets.length) {
-        addSection(
-          ['Digital Wallets', 'Response Data'],
-          wallets
-        );
-      }
-
-      if (endpoints.length) {
-        addSection(
-          ['API Endpoints', 'Request Data', 'Response Data'],
-          endpoints,
-          3
-        );
-      }
-
-      addSection(
-        ['Fee Type', 'Using? (Y/N)'],
-        feeOptions
-      );
-
-      addSection(
-        ['Webhook', 'Subscribed? (Y/N)'],
-        webhookOptions
-      );
+      addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
+      addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob(
-        [buf],
-        {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
-      );
+      const blob = new Blob([buf], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
@@ -413,13 +353,10 @@
       saveAs(blob, fileName);
     });
 
-    // ONBOARDING SHEET EXPORT
+    // EXPORT ONBOARDING SHEET
     document.getElementById('onboardingBtn').addEventListener('click', async () => {
 
-      const partnerName = document
-        .getElementById('partnerName')
-        .value
-        .trim();
+      const partnerName = document.getElementById('partnerName').value.trim();
 
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Onboarding Sheet');
@@ -431,20 +368,9 @@
       ];
 
       const headerStyle = {
-        font: {
-          bold: true,
-          color: { argb: 'FFFFFFFF' }
-        },
-
-        fill: {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'E60000' }
-        },
-
-        alignment: {
-          horizontal: 'center'
-        }
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
+        alignment: { horizontal: 'center' }
       };
 
       const headerRow = ws.addRow([
@@ -454,26 +380,19 @@
       ]);
 
       for (let i = 1; i <= 3; i++) {
-
         const cell = headerRow.getCell(i);
-
         cell.font = headerStyle.font;
         cell.fill = headerStyle.fill;
         cell.alignment = headerStyle.alignment;
       }
 
-      onboardingOptions.forEach(v => {
-        ws.addRow([v, '', '']);
-      });
+      onboardingOptions.forEach(v => ws.addRow([v, '', '']));
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob(
-        [buf],
-        {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
-      );
+      const blob = new Blob([buf], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Onboarding-Sheet.xlsx`
