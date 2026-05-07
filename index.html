@@ -1,3 +1,4 @@
+```html id="8v7d3m"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,11 +31,12 @@
     }
 
     button {
-      margin: 4px;
-      padding: 8px 12px;
+      margin: 3px;
+      padding: 6px 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
       cursor: pointer;
+      font-size: 13px;
     }
 
     .selected {
@@ -48,12 +50,19 @@
 
     details {
       margin-bottom: 12px;
+      padding-left: 0;
     }
 
     summary {
       cursor: pointer;
       font-weight: bold;
       margin-bottom: 8px;
+      margin-left: 0;
+    }
+
+    .button-group {
+      margin-left: 0;
+      padding-left: 0;
     }
   </style>
 </head>
@@ -219,6 +228,7 @@
 
     const container = document.getElementById('sections');
 
+    // STANDARD SECTIONS
     sectionsData.forEach(section => {
 
       const div = document.createElement('div');
@@ -228,6 +238,9 @@
       title.textContent = section.title;
 
       div.appendChild(title);
+
+      const buttonGroup = document.createElement('div');
+      buttonGroup.classList.add('button-group');
 
       section.options.forEach(opt => {
 
@@ -239,12 +252,15 @@
           btn.classList.toggle('selected');
         });
 
-        div.appendChild(btn);
+        buttonGroup.appendChild(btn);
       });
+
+      div.appendChild(buttonGroup);
 
       container.appendChild(div);
     });
 
+    // API ENDPOINT DROPDOWNS
     const apiDiv = document.createElement('div');
     apiDiv.classList.add('section');
 
@@ -262,6 +278,9 @@
 
       details.appendChild(summary);
 
+      const buttonGroup = document.createElement('div');
+      buttonGroup.classList.add('button-group');
+
       groupOptions.forEach(opt => {
 
         const btn = document.createElement('button');
@@ -272,14 +291,17 @@
           btn.classList.toggle('selected');
         });
 
-        details.appendChild(btn);
+        buttonGroup.appendChild(btn);
       });
+
+      details.appendChild(buttonGroup);
 
       apiDiv.appendChild(details);
     });
 
     container.appendChild(apiDiv);
 
+    // VALIDATION SHEET EXPORT
     document.getElementById('exportBtn').addEventListener('click', async () => {
 
       const partnerName = document
@@ -467,3 +489,4 @@
 
 </body>
 </html>
+```
