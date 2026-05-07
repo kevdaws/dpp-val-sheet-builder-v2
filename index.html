@@ -15,6 +15,31 @@
 
     body {
       margin: 2em;
+      display: flex;
+      gap: 2em;
+      align-items: flex-start;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .panel {
+      width: 260px;
+      border-left: 1px solid #ddd;
+      padding-left: 16px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+    }
+
+    .section {
+      margin-bottom: 1.5em;
     }
 
     label {
@@ -43,10 +68,6 @@
       color: white;
     }
 
-    .section {
-      margin-bottom: 1.5em;
-    }
-
     details {
       margin-bottom: 12px;
     }
@@ -61,25 +82,51 @@
     .button-group {
       margin-top: 8px;
     }
+
+    ul {
+      padding-left: 18px;
+      font-size: 13px;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="section">
-    <label>Partner Name:</label>
-    <input id="partnerName" type="text" placeholder="Enter partner name..." />
+  <div class="main">
+
+    <div class="section">
+      <label>Partner Name:</label>
+      <input id="partnerName" type="text" placeholder="Enter partner name..." />
+    </div>
+
+    <div id="sections"></div>
+
+    <button id="exportBtn" style="background-color: #E60000; color: white;">
+      Create Validation Sheet
+    </button>
+
+    <button id="onboardingBtn" style="background-color: #222; color: white;">
+      Create Onboarding Sheet
+    </button>
+
   </div>
 
-  <div id="sections"></div>
+  <!-- RIGHT SIDE SELECTION PANEL -->
+  <div class="panel">
+    <h3>Current Selections</h3>
 
-  <button id="exportBtn" style="background-color: #E60000; color: white;">
-    Create Validation Sheet
-  </button>
+    <strong>Hosted</strong>
+    <ul id="sel-hosted"></ul>
 
-  <button id="onboardingBtn" style="background-color: #222; color: white;">
-    Create Onboarding Sheet
-  </button>
+    <strong>Embedded</strong>
+    <ul id="sel-embedded"></ul>
+
+    <strong>Wallets</strong>
+    <ul id="sel-wallets"></ul>
+
+    <strong>API</strong>
+    <ul id="sel-api"></ul>
+  </div>
 
   <script>
 
@@ -172,11 +219,7 @@
       'Board Merchant'
     ];
 
-    const feeOptions = [
-      'Partner Fee',
-      'Surcharge'
-    ];
-
+    const feeOptions = ['Partner Fee', 'Surcharge'];
     const webhookOptions = [
       'Merchant Loaded',
       'Merchant Updated',
@@ -197,49 +240,45 @@
       const idx = arr.indexOf(value);
       if (idx === -1) arr.push(value);
       else arr.splice(idx, 1);
+      renderSelections();
     }
 
-    const sectionsData = [
-      {
-        title: 'Hosted Payment Form Options',
-        options: hostedOptions,
-        arr: hosted
-      },
-      {
-        title: 'Embedded Payment Options',
-        options: embeddedOptions,
-        arr: embedded
-      },
-      {
-        title: 'Digital Wallet Options',
-        options: walletOptions,
-        arr: wallets
-      }
-    ];
+    function renderSelections() {
+      document.getElementById('sel-hosted').innerHTML =
+        hosted.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-embedded').innerHTML =
+        embedded.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-wallets').innerHTML =
+        wallets.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-api').innerHTML =
+        endpoints.map(v => `<li>${v}</li>`).join('');
+    }
 
     const container = document.getElementById('sections');
 
-    // MAIN SECTIONS AS DROPDOWNS
-    sectionsData.forEach(section => {
+    function buildSection(title, options, arr) {
 
       const details = document.createElement('details');
       details.classList.add('section');
 
       const summary = document.createElement('summary');
-      summary.textContent = section.title;
+      summary.textContent = title;
 
       details.appendChild(summary);
 
       const buttonGroup = document.createElement('div');
       buttonGroup.classList.add('button-group');
 
-      section.options.forEach(opt => {
+      options.forEach(opt => {
 
         const btn = document.createElement('button');
         btn.textContent = opt;
 
         btn.addEventListener('click', () => {
-          toggleSelection(section.arr, opt);
+          toggleSelection(arr, opt);
           btn.classList.toggle('selected');
         });
 
@@ -248,9 +287,12 @@
 
       details.appendChild(buttonGroup);
       container.appendChild(details);
-    });
+    }
 
-    // API ENDPOINTS (INDENTED DROPDOWNS)
+    buildSection('Hosted Payment Form Options', hostedOptions, hosted);
+    buildSection('Embedded Payment Options', embeddedOptions, embedded);
+    buildSection('Digital Wallet Options', walletOptions, wallets);
+
     const apiDetails = document.createElement('details');
     apiDetails.classList.add('section');
 
@@ -272,7 +314,6 @@
       details.appendChild(summary);
 
       const buttonGroup = document.createElement('div');
-      buttonGroup.classList.add('button-group');
 
       groupOptions.forEach(opt => {
 
@@ -294,112 +335,7 @@
     apiDetails.appendChild(apiContainer);
     container.appendChild(apiDetails);
 
-    // EXPORT VALIDATION SHEET
-    document.getElementById('exportBtn').addEventListener('click', async () => {
-
-      const partnerName = document.getElementById('partnerName').value.trim();
-
-      const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet('Validation Sheet');
-
-      ws.columns = [
-        { width: 30 },
-        { width: 30 },
-        { width: 30 }
-      ];
-
-      const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
-      };
-
-      const addSection = (header, arr, cols = 2) => {
-
-        if (ws.lastRow) ws.addRow([]);
-
-        const headerRow = ws.addRow(header);
-
-        for (let i = 1; i <= header.length; i++) {
-          const cell = headerRow.getCell(i);
-          cell.font = headerStyle.font;
-          cell.fill = headerStyle.fill;
-          cell.alignment = headerStyle.alignment;
-        }
-
-        arr.forEach(v => {
-          ws.addRow([v, ...(Array(cols - 1).fill(''))]);
-        });
-      };
-
-      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
-      if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
-      if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
-      if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
-
-      addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
-      addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
-
-      const buf = await wb.xlsx.writeBuffer();
-
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-
-      const fileName = partnerName
-        ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
-        : 'Validation-Sheet.xlsx';
-
-      saveAs(blob, fileName);
-    });
-
-    // EXPORT ONBOARDING SHEET
-    document.getElementById('onboardingBtn').addEventListener('click', async () => {
-
-      const partnerName = document.getElementById('partnerName').value.trim();
-
-      const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet('Onboarding Sheet');
-
-      ws.columns = [
-        { width: 30 },
-        { width: 30 },
-        { width: 30 }
-      ];
-
-      const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
-      };
-
-      const headerRow = ws.addRow([
-        'Onboarding Endpoint',
-        'Request Data',
-        'Response Data'
-      ]);
-
-      for (let i = 1; i <= 3; i++) {
-        const cell = headerRow.getCell(i);
-        cell.font = headerStyle.font;
-        cell.fill = headerStyle.fill;
-        cell.alignment = headerStyle.alignment;
-      }
-
-      onboardingOptions.forEach(v => ws.addRow([v, '', '']));
-
-      const buf = await wb.xlsx.writeBuffer();
-
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-
-      const fileName = partnerName
-        ? `${partnerName.replaceAll(' ', '-')}-Onboarding-Sheet.xlsx`
-        : 'Onboarding-Sheet.xlsx';
-
-      saveAs(blob, fileName);
-    });
+    renderSelections();
 
   </script>
 
