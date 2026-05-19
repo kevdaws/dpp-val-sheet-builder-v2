@@ -4,17 +4,53 @@
   <meta charset="UTF-8" />
   <title>Validation Sheet Builder</title>
 
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+
   <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
 
   <style>
+
     * {
       font-family: 'Poppins';
+      box-sizing: border-box;
     }
 
     body {
       margin: 2em;
+      display: flex;
+      gap: 1.2em;
+      align-items: flex-start;
+      background: #fff;
+    }
+
+    .main {
+      flex: 0 0 68%;
+    }
+
+    .panel {
+      width: 260px;
+      border-left: 1px solid #ddd;
+      padding-left: 14px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .panel-section {
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 1.5em;
     }
 
     label {
@@ -27,6 +63,7 @@
       padding: 8px 12px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      width: 300px;
     }
 
     button {
@@ -36,15 +73,12 @@
       border: 1px solid #ccc;
       cursor: pointer;
       font-size: 13px;
+      background: white;
     }
 
     .selected {
       background-color: #E60000;
       color: white;
-    }
-
-    .section {
-      margin-bottom: 1.5em;
     }
 
     details {
@@ -61,27 +95,96 @@
     .button-group {
       margin-top: 8px;
     }
+
+    ul {
+      padding-left: 18px;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .action-buttons {
+      margin-top: 24px;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <div class="section">
-    <label>Partner Name:</label>
-    <input id="partnerName" type="text" placeholder="Enter partner name..." />
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="section">
+      <label>Partner Name:</label><br />
+      <input
+        id="partnerName"
+        type="text"
+        placeholder="Enter partner name..."
+      />
+    </div>
+
+    <div id="sections"></div>
+
+    <div class="action-buttons">
+
+      <button
+        id="exportBtn"
+        style="background-color:#E60000;color:white;"
+      >
+        Create Validation Sheet
+      </button>
+
+      <button
+        id="onboardingBtn"
+        style="background-color:#222;color:white;"
+      >
+        Create Onboarding Sheet
+      </button>
+
+      <button
+        id="letterBtn"
+        style="background-color:#0066cc;color:white;"
+      >
+        Create Validation Letter
+      </button>
+
+    </div>
+
   </div>
 
-  <div id="sections"></div>
+  <!-- RIGHT PANEL -->
+  <div class="panel">
 
-  <button id="exportBtn" style="background-color: #E60000; color: white;">
-    Create Validation Sheet
-  </button>
+    <h3>Current Selections</h3>
 
-  <button id="onboardingBtn" style="background-color: #222; color: white;">
-    Create Onboarding Sheet
-  </button>
+    <div class="panel-section">
+      <span class="panel-title" id="hostedTitle">Hosted</span>
+      <ul id="sel-hosted"></ul>
+    </div>
+
+    <div class="panel-section">
+      <span class="panel-title" id="embeddedTitle">Embedded</span>
+      <ul id="sel-embedded"></ul>
+    </div>
+
+    <div class="panel-section">
+      <span class="panel-title" id="walletTitle">Wallets</span>
+      <ul id="sel-wallets"></ul>
+    </div>
+
+    <div class="panel-section">
+      <span class="panel-title" id="apiTitle">API</span>
+      <ul id="sel-api"></ul>
+    </div>
+
+  </div>
 
   <script>
+
+
+    // =========================
+    // OPTIONS
+    // =========================
 
     const hostedOptions = [
       'Token (Keyed)',
@@ -188,58 +291,127 @@
       'Vault'
     ];
 
+    // =========================
+    // STATE
+    // =========================
+
     let hosted = [];
     let embedded = [];
     let wallets = [];
     let endpoints = [];
 
+    // =========================
+    // HELPERS
+    // =========================
+
     function toggleSelection(arr, value) {
+
       const idx = arr.indexOf(value);
-      if (idx === -1) arr.push(value);
-      else arr.splice(idx, 1);
+
+      if (idx === -1) {
+        arr.push(value);
+      } else {
+        arr.splice(idx, 1);
+      }
+
+      renderSelections();
     }
 
-    const sectionsData = [
-      {
-        title: 'Hosted Payment Form Options',
-        options: hostedOptions,
-        arr: hosted
-      },
-      {
-        title: 'Embedded Payment Options',
-        options: embeddedOptions,
-        arr: embedded
-      },
-      {
-        title: 'Digital Wallet Options',
-        options: walletOptions,
-        arr: wallets
+    function setVisibility(id, list) {
+
+      document.getElementById(id).style.display =
+        list.length ? 'block' : 'none';
+    }
+
+    function renderSelections() {
+
+      document.getElementById('sel-hosted').innerHTML =
+        hosted.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-embedded').innerHTML =
+        embedded.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-wallets').innerHTML =
+        wallets.map(v => `<li>${v}</li>`).join('');
+
+      document.getElementById('sel-api').innerHTML =
+        endpoints.map(v => `<li>${v}</li>`).join('');
+
+      setVisibility('hostedTitle', hosted);
+      setVisibility('embeddedTitle', embedded);
+      setVisibility('walletTitle', wallets);
+      setVisibility('apiTitle', endpoints);
+    }
+
+    function formatDate(date) {
+
+      return `${String(date.getMonth() + 1).padStart(2, '0')}/${
+        String(date.getDate()).padStart(2, '0')
+      }/${date.getFullYear()}`;
+    }
+
+    function getSelectedSections() {
+
+      const sections = [];
+
+      if (hosted.length) {
+        sections.push({
+          name: 'Hosted Payment Form Options',
+          items: hosted
+        });
       }
-    ];
+
+      if (embedded.length) {
+        sections.push({
+          name: 'Embedded Payment Options',
+          items: embedded
+        });
+      }
+
+      if (wallets.length) {
+        sections.push({
+          name: 'Digital Wallet Options',
+          items: wallets
+        });
+      }
+
+      if (endpoints.length) {
+        sections.push({
+          name: 'API Endpoints',
+          items: endpoints
+        });
+      }
+
+      return sections;
+    }
+
+    // =========================
+    // BUILD UI
+    // =========================
 
     const container = document.getElementById('sections');
 
-    // MAIN SECTIONS AS DROPDOWNS
-    sectionsData.forEach(section => {
+    function buildSection(title, options, arr) {
 
       const details = document.createElement('details');
-      details.classList.add('section');
 
       const summary = document.createElement('summary');
-      summary.textContent = section.title;
+      summary.textContent = title;
 
       details.appendChild(summary);
 
       const buttonGroup = document.createElement('div');
       buttonGroup.classList.add('button-group');
 
-      section.options.forEach(opt => {
+      options.forEach(opt => {
 
         const btn = document.createElement('button');
         btn.textContent = opt;
 
         btn.addEventListener('click', () => {
-          toggleSelection(section.arr, opt);
+
+          toggleSelection(arr, opt);
+
           btn.classList.toggle('selected');
         });
 
@@ -248,11 +420,32 @@
 
       details.appendChild(buttonGroup);
       container.appendChild(details);
-    });
+    }
 
-    // API ENDPOINTS (INDENTED DROPDOWNS)
+    buildSection(
+      'Hosted Payment Form Options',
+      hostedOptions,
+      hosted
+    );
+
+    buildSection(
+      'Embedded Payment Options',
+      embeddedOptions,
+      embedded
+    );
+
+    buildSection(
+      'Digital Wallet Options',
+      walletOptions,
+      wallets
+    );
+
+    // =========================
+    // API DROPDOWNS
+    // =========================
+
     const apiDetails = document.createElement('details');
-    apiDetails.classList.add('section');
+    apiDetails.open = true;
 
     const apiSummary = document.createElement('summary');
     apiSummary.textContent = 'API Endpoints';
@@ -272,7 +465,6 @@
       details.appendChild(summary);
 
       const buttonGroup = document.createElement('div');
-      buttonGroup.classList.add('button-group');
 
       groupOptions.forEach(opt => {
 
@@ -280,7 +472,9 @@
         btn.textContent = opt;
 
         btn.addEventListener('click', () => {
+
           toggleSelection(endpoints, opt);
+
           btn.classList.toggle('selected');
         });
 
@@ -294,12 +488,22 @@
     apiDetails.appendChild(apiContainer);
     container.appendChild(apiDetails);
 
-    // EXPORT VALIDATION SHEET
-    document.getElementById('exportBtn').addEventListener('click', async () => {
+    renderSelections();
 
-      const partnerName = document.getElementById('partnerName').value.trim();
+    // =========================
+    // VALIDATION SHEET
+    // =========================
+
+    document.getElementById('exportBtn')
+      .addEventListener('click', async () => {
+
+      const partnerName =
+        document.getElementById('partnerName')
+        .value
+        .trim();
 
       const wb = new ExcelJS.Workbook();
+
       const ws = wb.addWorksheet('Validation Sheet');
 
       ws.columns = [
@@ -309,42 +513,101 @@
       ];
 
       const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
+        font: {
+          bold: true,
+          color: { argb: 'FFFFFFFF' }
+        },
+
+        fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E60000' }
+        },
+
+        alignment: {
+          horizontal: 'center'
+        }
       };
 
-      const addSection = (header, arr, cols = 2) => {
+      const addSection = (
+        header,
+        arr,
+        cols = 2
+      ) => {
 
-        if (ws.lastRow) ws.addRow([]);
+        if (ws.lastRow) {
+          ws.addRow([]);
+        }
 
         const headerRow = ws.addRow(header);
 
         for (let i = 1; i <= header.length; i++) {
+
           const cell = headerRow.getCell(i);
+
           cell.font = headerStyle.font;
           cell.fill = headerStyle.fill;
           cell.alignment = headerStyle.alignment;
         }
 
         arr.forEach(v => {
-          ws.addRow([v, ...(Array(cols - 1).fill(''))]);
+
+          ws.addRow([
+            v,
+            ...(Array(cols - 1).fill(''))
+          ]);
         });
       };
 
-      if (hosted.length) addSection(['Hosted Payment Form', 'Response Data'], hosted);
-      if (embedded.length) addSection(['Embedded Payments', 'JWT', 'Response Data'], embedded, 3);
-      if (wallets.length) addSection(['Digital Wallets', 'Response Data'], wallets);
-      if (endpoints.length) addSection(['API Endpoints', 'Request Data', 'Response Data'], endpoints, 3);
+      if (hosted.length) {
+        addSection(
+          ['Hosted Payment Form', 'Response Data'],
+          hosted
+        );
+      }
 
-      addSection(['Fee Type', 'Using? (Y/N)'], feeOptions);
-      addSection(['Webhook', 'Subscribed? (Y/N)'], webhookOptions);
+      if (embedded.length) {
+        addSection(
+          ['Embedded Payments', 'JWT', 'Response Data'],
+          embedded,
+          3
+        );
+      }
+
+      if (wallets.length) {
+        addSection(
+          ['Digital Wallets', 'Response Data'],
+          wallets
+        );
+      }
+
+      if (endpoints.length) {
+        addSection(
+          ['API Endpoints', 'Request Data', 'Response Data'],
+          endpoints,
+          3
+        );
+      }
+
+      addSection(
+        ['Fee Type', 'Using? (Y/N)'],
+        feeOptions
+      );
+
+      addSection(
+        ['Webhook', 'Subscribed? (Y/N)'],
+        webhookOptions
+      );
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const blob = new Blob(
+        [buf],
+        {
+          type:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      );
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.xlsx`
@@ -353,12 +616,20 @@
       saveAs(blob, fileName);
     });
 
-    // EXPORT ONBOARDING SHEET
-    document.getElementById('onboardingBtn').addEventListener('click', async () => {
+    // =========================
+    // ONBOARDING SHEET
+    // =========================
 
-      const partnerName = document.getElementById('partnerName').value.trim();
+    document.getElementById('onboardingBtn')
+      .addEventListener('click', async () => {
+
+      const partnerName =
+        document.getElementById('partnerName')
+        .value
+        .trim();
 
       const wb = new ExcelJS.Workbook();
+
       const ws = wb.addWorksheet('Onboarding Sheet');
 
       ws.columns = [
@@ -368,9 +639,20 @@
       ];
 
       const headerStyle = {
-        font: { bold: true, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E60000' } },
-        alignment: { horizontal: 'center' }
+        font: {
+          bold: true,
+          color: { argb: 'FFFFFFFF' }
+        },
+
+        fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E60000' }
+        },
+
+        alignment: {
+          horizontal: 'center'
+        }
       };
 
       const headerRow = ws.addRow([
@@ -380,19 +662,27 @@
       ]);
 
       for (let i = 1; i <= 3; i++) {
+
         const cell = headerRow.getCell(i);
+
         cell.font = headerStyle.font;
         cell.fill = headerStyle.fill;
         cell.alignment = headerStyle.alignment;
       }
 
-      onboardingOptions.forEach(v => ws.addRow([v, '', '']));
+      onboardingOptions.forEach(v => {
+        ws.addRow([v, '', '']);
+      });
 
       const buf = await wb.xlsx.writeBuffer();
 
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const blob = new Blob(
+        [buf],
+        {
+          type:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      );
 
       const fileName = partnerName
         ? `${partnerName.replaceAll(' ', '-')}-Onboarding-Sheet.xlsx`
@@ -400,6 +690,314 @@
 
       saveAs(blob, fileName);
     });
+
+    // =========================
+    // VALIDATION LETTER
+    // =========================
+
+    document.getElementById('letterBtn')
+  .addEventListener('click', async () => {
+
+  const partnerName =
+    document.getElementById('partnerName')
+      .value
+      .trim() || 'Partner';
+
+  const today = formatDate(new Date());
+
+  const sections = getSelectedSections();
+
+  // =========================
+  // BASE STYLING
+  // =========================
+
+  const BASE_SIZE = 22; // 11pt equivalent in docx
+  const HEADING_SIZE = 40;
+
+  const baseText = (text, opts = {}) =>
+    new docx.TextRun({
+      text,
+      font: "Arial",   // UPDATED
+      size: BASE_SIZE,
+      ...opts
+    });
+
+  const headingText = (text, opts = {}) =>
+    new docx.TextRun({
+      text,
+      font: "Arial",   // UPDATED
+      size: HEADING_SIZE,
+      bold: true,
+      ...opts
+    });
+
+  const signatureText = (text, opts = {}) =>
+    new docx.TextRun({
+      text,
+      font: "Arial",
+      size: 22, // 11pt for signature section
+      ...opts
+    });
+
+  const para = (content, line = 240, opts = {}) =>
+    new docx.Paragraph({
+      spacing: {
+        line,
+        ...opts.spacing
+      },
+      ...opts,
+      children: content
+    });
+
+  const children = [];
+
+  // =========================
+  // HEADER
+  // =========================
+
+  const logoImage = await fetch("./assets/logo.png").then(r => r.arrayBuffer());
+
+  children.push(
+    para(
+      [
+        headingText("DPP Validation Letter"),
+        new docx.TextRun("\t"),
+        new docx.ImageRun({
+          data: logoImage,
+          transformation: {
+            width: 120,
+            height: 40
+          }
+        })
+      ],
+      240,
+      {
+        tabStops: [
+          {
+            type: docx.TabStopType.RIGHT,
+            position: docx.TabStopPosition.MAX
+          }
+        ]
+      }
+    )
+  );
+
+  // =========================
+  // LINE DIVIDER
+  // =========================
+
+  children.push(
+    new docx.Paragraph({
+      spacing: { line: 240 },
+      border: {
+        bottom: {
+          color: "000000",
+          style: docx.BorderStyle.SINGLE,
+          size: 6,
+          space: 1
+        }
+      },
+      children: [new docx.TextRun("")]
+    })
+  );
+
+  children.push(para([], 360));
+
+  // =========================
+  // DATE (11pt)
+  // =========================
+
+  children.push(
+    para([
+      signatureText("Date: ", { bold: true }),
+      signatureText(today)
+    ])
+  );
+
+  children.push(para([], 240));
+
+  // =========================
+  // PARTNER NAME
+  // =========================
+
+  children.push(
+    para([
+      baseText("Partner Name: ", { bold: true }),
+      baseText(partnerName)
+    ])
+  );
+
+  children.push(para([], 360));
+
+  // =========================
+  // PRODUCT
+  // =========================
+
+  const normalizeProductName = (name) => {
+    return name
+      .replace(/Hosted Payment Form options?/i, "Hosted Payment Form")
+      .replace(/Embedded Payment Options?/i, "Embedded Payments")
+      .replace(/Digital Wallet Options?/i, "Digital Wallets")
+      .replace(/API Endpoints?/i, "DPP Experience API");
+  };
+
+  const normalizedProducts = sections.map(s =>
+    normalizeProductName(s.name.replace(/options$/i, '').trim())
+  );
+
+  children.push(
+    para([
+      baseText("Product: ", { bold: true }),
+      baseText(normalizedProducts.join(', '))
+    ])
+  );
+
+  children.push(
+    para([
+      baseText("Gateway: ", { bold: true }),
+      baseText("DPP")
+    ])
+  );
+
+  children.push(para([], 360));
+
+  // =========================
+  // FEATURES
+  // =========================
+
+  children.push(
+    para([
+      baseText("Features", { bold: true })
+    ])
+  );
+
+  sections.forEach(section => {
+
+    const cleanTitle = normalizeProductName(
+      section.name.replace(/options$/i, '').trim()
+    );
+
+    children.push(
+      para(
+        [
+          baseText(`• ${cleanTitle}`, { bold: true })
+        ],
+        240,
+        {
+          spacing: { before: 240 }
+        }
+      )
+    );
+
+    section.items.forEach((item, idx) => {
+      children.push(
+        para(
+          [baseText(item)],
+          240,
+          {
+            indent: { left: 720 },
+            spacing: {
+              after: idx === section.items.length - 1 ? 120 : 40
+            }
+          }
+        )
+      );
+    });
+  });
+
+  children.push(para([], 360));
+
+  // =========================
+  // BODY
+  // =========================
+
+  children.push(
+    para([
+      baseText("Confirmed all operations have run successfully through DPP Experience API.")
+    ],
+    240,
+    { spacing: { after: 120 } })
+  );
+
+  children.push(
+    para([
+      baseText(
+        `The signed below has verified that ${partnerName} has completed and passed First American Payment Systems validation process.`
+      )
+    ],
+    240,
+    { spacing: { after: 180 } })
+  );
+
+  // =========================
+  // COMPLIANCE NOTE (NEW)
+  // =========================
+
+  children.push(
+    para([
+      baseText(
+        "Please note that the analysis performed was a limited test and that it remains the responsibility of the developer to ensure that all current and future required data elements are supplied for interchange compliance. The developer must also ensure that the full and unaltered contents of the payment data are transmitted in each request message."
+      )
+    ],
+    240,
+    { spacing: { after: 180 } })
+  );
+
+  // =========================
+  // SIGNATURE (11pt)
+  // =========================
+
+  children.push(
+    para([
+      signatureText("Validated by,", { bold: true })
+    ],
+    240,
+    { spacing: { after: 180 } })
+  );
+
+  children.push(
+    para([
+      signatureText("Kevin Dawson", { color: "FF0000", bold: true })
+    ],
+    240,
+    { spacing: { after: 120 } })
+  );
+
+  children.push(
+    para([
+      signatureText("Software Development Analyst")
+    ],
+    240,
+    { spacing: { after: 80 } })
+  );
+
+  children.push(
+    para([
+      signatureText("First American by Deluxe®")
+    ],
+    240
+  ));
+
+  // =========================
+  // BUILD DOC
+  // =========================
+
+  const doc = new docx.Document({
+    sections: [
+      {
+        properties: {},
+        children
+      }
+    ]
+  });
+
+  const blob = await docx.Packer.toBlob(doc);
+
+  saveAs(
+    blob,
+    `${partnerName.replaceAll(' ', '-')}-Validation-Sheet.docx`
+  );
+});
 
   </script>
 
